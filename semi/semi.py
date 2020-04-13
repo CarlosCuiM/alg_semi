@@ -71,11 +71,19 @@ class Semi:
                 self._sample_weight[self._num_support_vectors] = -learning_rate * true_label * gradient
                 self._support_vectors.append(x)
 
-                self._num_support_vectors  += 1
+                self._num_support_vectors += 1
             else:
                 if self._num_support_vectors > 1 and reg_coefficient != 0:
                     self._sample_weight[self._num_support_vectors - 1] = (1 - learning_rate * reg_coefficient) * \
                         self._sample_weight[self._num_support_vectors - 1]
+
+        else:
+            kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
+            t = np.argmax(kernel_vector)
+            self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
+                (1 - self._sample_weight[t])
+            self._support_vectors.append(x)
+            self._num_support_vectors += 1
 
     def _get_accuracy(self, t):
         return 1-self._num_error / t
