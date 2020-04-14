@@ -42,7 +42,7 @@ class Semi:
 
         self._confusion_matrix = np.zeros((2, 2))
         for t in range(self._num_observations):
-            print(t)
+
             self._update(X[t], y[t], learning_rate, reg_coefficient)
 
     def _update(self, x, y, learning_rate, reg_coefficient):
