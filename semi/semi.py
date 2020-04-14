@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 
 from .kernel import RbfKernel
 from .loss import HingeLoss
+from .manifold_reg import RbfManifold
 
 
 class Semi:
 
     def __init__(self, kernel=RbfKernel(), loss=HingeLoss(),
                  num_support_vector=0, support_vectors=[],
-                 sample_weight=None):
+                 sample_weight=None, manifold=RbfManifold()):
 
         self._num_support_vectors = num_support_vector
         if len(support_vectors) != 0:
@@ -27,6 +28,7 @@ class Semi:
         self._sample_weight = sample_weight
         self._num_observations = 0
         self._confusion_matrix = []
+        self._manifold = manifold
 
     def _predict(self, x):
         return np.dot(self._sample_weight, x)
@@ -40,6 +42,7 @@ class Semi:
 
         self._confusion_matrix = np.zeros((2, 2))
         for t in range(self._num_observations):
+            print(t)
             self._update(X[t], y[t], learning_rate, reg_coefficient)
 
     def _update(self, x, y, learning_rate, reg_coefficient):
@@ -71,23 +74,27 @@ class Semi:
                 gradient = -gradient_absolute
                 self._sample_weight[self._num_support_vectors] = -learning_rate * true_label * gradient
                 self._support_vectors.append(x)
-
                 self._num_support_vectors += 1
+
             else:
                 if self._num_support_vectors > 1 and reg_coefficient != 0:
                     self._sample_weight[self._num_support_vectors - 1] = (1 - learning_rate * reg_coefficient) * \
                         self._sample_weight[self._num_support_vectors - 1]
 
-        # else:
-        #     kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
-        #     print(kernel_vector)
-        #     #print(self._sample_weight)
-        #     t = np.argmax(kernel_vector)
-        #     print(t)
-        #     self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
-        #         (1 - self._sample_weight[t])
-        #     self._support_vectors.append(x)
-        #     self._num_support_vectors += 1
+        else:
+            if isinstance(self._sample_weight, np.ndarray):
+                self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
+            else:
+                self._sample_weight = np.zeros((1,))
+            kernel_vector = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
+            # print(kernel_vector)
+            # print(self._sample_weight.shape)
+            t = np.argmax(kernel_vector)
+            # print(np.dot(self._sample_weight, kernel_vector))
+            self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
+                (1 - self._sample_weight[t])
+            self._support_vectors.append(x)
+            self._num_support_vectors += 1
 
     def _get_accuracy(self, t):
         return 1 - self._num_error / t
