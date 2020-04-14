@@ -56,6 +56,7 @@ class Semi:
 
         if true_label != 0:
             loss = None
+            self._count_num_error(pred_label, true_label)
             loss = self._loss.loss_computing(pred_value, true_label)
             self._accuracy.append(self._get_accuracy(self._current_step + 1))
             self._current_step += 1
@@ -77,18 +78,24 @@ class Semi:
                     self._sample_weight[self._num_support_vectors - 1] = (1 - learning_rate * reg_coefficient) * \
                         self._sample_weight[self._num_support_vectors - 1]
 
-        else:
-            kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
-            t = np.argmax(kernel_vector)
-            self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
-                (1 - self._sample_weight[t])
-            self._support_vectors.append(x)
-            self._num_support_vectors += 1
+        # else:
+        #     kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
+        #     print(kernel_vector)
+        #     #print(self._sample_weight)
+        #     t = np.argmax(kernel_vector)
+        #     print(t)
+        #     self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
+        #         (1 - self._sample_weight[t])
+        #     self._support_vectors.append(x)
+        #     self._num_support_vectors += 1
 
     def _get_accuracy(self, t):
-        return 1-self._num_error / t
+        return 1 - self._num_error / t
 
     def plot_accuracy_curve(self, x_label="Number of sample", y_label='Accuracy', title=None):
+
+        print(self._accuracy)
+
         plt.plot(self._accuracy)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -96,6 +103,8 @@ class Semi:
         plt.show()
 
     def plot_confusion_matrix(self, x_label="True label", y_label="Prediction", title=None):
+
+        print(self._confusion_matrix)
 
         plt.imshow(self._confusion_matrix)
         ticks = range(2)
@@ -114,3 +123,14 @@ class Semi:
 
     def get_accuracy(self):
         return self._accuracy
+
+    def _count_num_error(self, pred_label, true_label):
+        if pred_label == -1:
+            pred_label = 0
+        if true_label == -1:
+            true_label = 0
+        if pred_label != true_label:
+            self._num_error += 1
+            self._confusion_matrix[true_label, pred_label] += 1
+        else:
+            self._confusion_matrix[true_label, true_label] += 1
