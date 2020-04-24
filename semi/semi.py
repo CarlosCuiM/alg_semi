@@ -52,11 +52,11 @@ class Semi:
                 start, end = 2**i, length
             else:
                 start, end = 2**i, 2**(i+1)
-            print(start, end)
+            #print(start, end)
             eta = 1 / np.sqrt(i+1)
-            print(eta)
-            # for t in range(start, end):
-            #     self._update(X[t], y[t], learning_rate, eta,reg_coefficient)
+            #print(eta)
+            for t in range(start, end):
+                self._update(X[t], y[t], learning_rate, eta,reg_coefficient)
 
     def _update(self, x, y, learning_rate, eta, reg_coefficient):
         if self._num_support_vectors > 0:
@@ -84,7 +84,7 @@ class Semi:
                     self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
                 else:
                     self._sample_weight = np.zeros((1,))
-                gradient_absolute = self._kernel.compute_kernel(x,x)
+                gradient_absolute = self._kernel.compute_kernel(x, x)
                 gradient = -gradient_absolute
                 self._sample_weight[self._num_support_vectors] = -learning_rate * true_label * gradient
                 self._support_vectors.append(x)
@@ -96,15 +96,18 @@ class Semi:
                         self._sample_weight[self._num_support_vectors - 1]
 
         else:
+            weight = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
+            max_margin = np.argmax(weight)
+            yt = self._predict(self._kernel.compute_kernel(np.array(self._support_vectors), x))
+            yt_ = self._predict(
+                self._kernel.compute_kernel(np.array(self._support_vectors), self._support_vectors[max_margin]))
             if isinstance(self._sample_weight, np.ndarray):
                 self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
             else:
                 self._sample_weight = np.zeros((1,))
-            weight = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
-            max_margin = np.argmax(weight)
 
             self._sample_weight[self._num_support_vectors] = -eta * weight[max_margin] * \
-                (1 - weight[max_margin])
+                (1 - weight[max_margin])*(yt-yt_)
             self._support_vectors.append(x)
             self._num_support_vectors += 1
 
