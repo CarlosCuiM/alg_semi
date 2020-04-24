@@ -43,11 +43,22 @@ class Semi:
         self._num_observations += len(y)
 
         self._confusion_matrix = np.zeros((2, 2))
-        for t in range(self._num_observations):
+        #for t in range(self._num_observations):
+        length = self._num_observations
+        max_stamp = int(np.log2(length))+1
+        print(length, max_stamp, 2**max_stamp)
+        for i in range(max_stamp):
+            if i == max_stamp - 1:
+                start, end = 2**i, length
+            else:
+                start, end = 2**i, 2**(i+1)
+            print(start, end)
+            eta = 1 / np.sqrt(i+1)
+            print(eta)
+            # for t in range(start, end):
+            #     self._update(X[t], y[t], learning_rate, eta,reg_coefficient)
 
-            self._update(X[t], y[t], learning_rate, reg_coefficient)
-
-    def _update(self, x, y, learning_rate, reg_coefficient):
+    def _update(self, x, y, learning_rate, eta, reg_coefficient):
         if self._num_support_vectors > 0:
             kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
             pred_value = self._predict(kernel_vector)
@@ -91,7 +102,8 @@ class Semi:
                 self._sample_weight = np.zeros((1,))
             weight = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
             max_margin = np.argmax(weight)
-            self._sample_weight[self._num_support_vectors] = - 5*learning_rate * weight[max_margin] * \
+
+            self._sample_weight[self._num_support_vectors] = -eta * weight[max_margin] * \
                 (1 - weight[max_margin])
             self._support_vectors.append(x)
             self._num_support_vectors += 1
