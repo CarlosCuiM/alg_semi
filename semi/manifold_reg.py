@@ -3,6 +3,8 @@ from abc import abstractmethod, ABC
 
 import numpy as np
 
+_all__ = ["RbfManifold"]
+
 
 class Manifold(ABC):
     @abstractmethod

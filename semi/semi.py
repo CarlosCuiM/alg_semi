@@ -7,6 +7,8 @@ from .kernel import RbfKernel
 from .loss import HingeLoss
 from .manifold_reg import RbfManifold
 
+__all__ = ["Semi"]
+
 
 class Semi:
 
@@ -49,6 +51,7 @@ class Semi:
         if self._num_support_vectors > 0:
             kernel_vector = self._kernel.compute_kernel(np.array(self._support_vectors), x)
             pred_value = self._predict(kernel_vector)
+            print(pred_value * y)
         else:
             pred_value = 0
 
@@ -86,13 +89,10 @@ class Semi:
                 self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
             else:
                 self._sample_weight = np.zeros((1,))
-            kernel_vector = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
-            # print(kernel_vector)
-            # print(self._sample_weight.shape)
-            t = np.argmax(kernel_vector)
-            # print(np.dot(self._sample_weight, kernel_vector))
-            self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
-                (1 - self._sample_weight[t])
+            weight = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
+            max_margin = np.argmax(weight)
+            self._sample_weight[self._num_support_vectors] = - 5*learning_rate * weight[max_margin] * \
+                (1 - weight[max_margin])
             self._support_vectors.append(x)
             self._num_support_vectors += 1
 
@@ -101,8 +101,6 @@ class Semi:
 
     def plot_accuracy_curve(self, x_label="Number of sample", y_label='Accuracy', title=None):
 
-        print(self._accuracy)
-
         plt.plot(self._accuracy)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -110,8 +108,6 @@ class Semi:
         plt.show()
 
     def plot_confusion_matrix(self, x_label="True label", y_label="Prediction", title=None):
-
-        print(self._confusion_matrix)
 
         plt.imshow(self._confusion_matrix)
         ticks = range(2)
@@ -141,3 +137,6 @@ class Semi:
             self._confusion_matrix[true_label, pred_label] += 1
         else:
             self._confusion_matrix[true_label, true_label] += 1
+
+    def get_sample_weight(self):
+        return self._sample_weight

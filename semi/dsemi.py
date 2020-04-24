@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 
+# -*- coding: UTF-8 -*-
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -82,46 +84,6 @@ class Nsemi:
                 if self._num_support_vectors > 1 and reg_coefficient != 0:
                     self._sample_weight[self._num_support_vectors - 1] = (1 - learning_rate * reg_coefficient) * \
                         self._sample_weight[self._num_support_vectors - 1]
-
-        # else:
-        #     if isinstance(self._sample_weight, np.ndarray):
-        #         self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
-        #     else:
-        #         self._sample_weight = np.zeros((1,))
-        #     kernel_vector = self._manifold.compute_weight(support_vector=np.array(self._support_vectors), x=x)
-        #     # print(kernel_vector)
-        #     # print(self._sample_weight.shape)
-        #     t = np.argmax(kernel_vector)
-        #     # print(np.dot(self._sample_weight, kernel_vector))
-        #     self._sample_weight[self._num_support_vectors] = - learning_rate * kernel_vector[t] * \
-        #         (1 - self._sample_weight[t])
-        #     self._support_vectors.append(x)
-        #     self._num_support_vectors += 1
-        #
-        #     loss = None
-        #     # self._count_num_error(pred_label, true_label)
-        #     loss = self._loss.loss_computing(pred_value, true_label)
-        #     # self._accuracy.append(self._get_accuracy(self._current_step + 1))
-        #     # self._current_step += 1
-        #
-        #     if loss > 0:
-        #         gradient = None
-        #         if isinstance(self._sample_weight, np.ndarray):
-        #             self._sample_weight = np.hstack((self._sample_weight, np.zeros((1,))))
-        #         else:
-        #             self._sample_weight = np.zeros((1,))
-        #         gradient_absolute = self._kernel.compute_kernel(x, x)
-        #         gradient = -gradient_absolute
-        #         self._sample_weight[self._num_support_vectors] = -learning_rate * pred_label * gradient
-        #         self._support_vectors.append(x)
-        #         self._num_support_vectors += 1
-        #
-        #     else:
-        #         if self._num_support_vectors > 1 and reg_coefficient != 0:
-        #             self._sample_weight[self._num_support_vectors - 1] = (1 - learning_rate * reg_coefficient) * \
-        #                                                                  self._sample_weight[
-        #                                                                      self._num_support_vectors - 1]
-
 
     def _get_accuracy(self, t):
         return 1 - self._num_error / t

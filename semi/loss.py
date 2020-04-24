@@ -16,8 +16,3 @@ class HingeLoss(Loss):
         return max(0, 1 - x * y)
 
 
-if __name__ == "__main__":
-    hl = HingeLoss()
-
-    loss2 = hl.loss_computing(x=2, y=1)
-    print(loss2)
